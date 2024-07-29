@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import time
+st_useragent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Safari/605.1.15"
+# формируем хеш заголовков
 
 
 def get_weather_habarovsk():
@@ -22,14 +24,13 @@ def get_weather_habarovsk():
         description = description_tag.text.strip(
         ) if description_tag else "Не удалось получить данные"
 
-        # Извлечение даты
-        date_tag = soup.find('span', class_='point-time')
+        date_tag = soup.find('span', class_="point-time")
         date = date_tag.text.strip() if date_tag else "Не удалось получить данные"
 
         return {
             "temperature": temperature,
-            "small-12 columns text-center padding-top-2": description,
-            "point-time": date,
+            "description": description,
+            "date": date,
         }
     else:
         return {
@@ -46,4 +47,5 @@ if __name__ == "__main__":
         print("Данные о погоде записаны в файл weather_data.json")
 
         # Ожидание 10 минут (600 секунд) перед следующим запросом
-        time.sleep(600)
+        time.sleep(60)
+

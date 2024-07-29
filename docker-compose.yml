@@ -1,24 +1,36 @@
 version: '3.8'
 
 services:
-  weather_collector:
+  parser:
     build:
       context: .
       dockerfile: Dockerfile.parser
     volumes:
       - ./weather_data.json:/app/weather_data.json
     restart: always
-    mem_limit: 300m
-        mem_reservation: 100m
-        cpus: 0.3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.50'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
 
-  db_transfer:
+  transfer:
     build:
       context: .
       dockerfile: Dockerfile.transfer
     volumes:
       - ./weather_data.json:/app/weather_data.json
     restart: always
-    mem_limit: 300m
-        mem_reservation: 100m
-        cpus: 0.3
+    depends_on:
+      - parser
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.50'
+        reservations:
+          memory: 128M
+          cpus: '0.25'

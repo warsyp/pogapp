@@ -1,62 +1,57 @@
+import psycopg2
 import json
 import time
-import psycopg2
-from psycopg2 import sql
 
+def transfer_to_db():
+    # Параметры подключения к базе данных
+    conn = psycopg2.connect(
+        host="172.20.10.8",
+        port="5432",
+        database="zeus_db",
+        user="transp",
+        password="112233"
+    )
 
-def read_weather_data(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    return data
+    cursor = conn.cursor()
 
+    with open('weather_data.json', 'r', encoding='utf-8') as json_file:
+        weather_data = json.load(json_file)
 
-def insert_weather_data(data):
+    # Проверка на наличие ошибки в данных
+    if "error" in weather_data:
+        print(f"Ошибка при получении данных: {weather_data['error']}")
+        return
+
+    # SQL-запрос для вставки данных
+    insert_query = """
+    INSERT INTO weather_date (temperature, description, date)
+    VALUES (%s, %s, %s)
+    """
+
     try:
-        # Настройки подключения к базе данных
-        conn = psycopg2.connect(
-            dbname="zeus_db",
-            user="transp",
-            password="112233",
-            host="192.168.1.70",
-            port="5432"
-        )
-        cursor = conn.cursor()
-
-        # SQL-запрос для вставки данных
-        insert_query = sql.SQL("""
-            INSERT INTO weather_data (temperature, small-12 columns text-center padding-top-2, point-time)
-            VALUES (%s, %s, %s)
-        """)
-
-        # Данные для вставки
-        values = (
-            data.get('temperature', 'Не удалось получить данные'),
-            data.get('small-12 columns text-center padding-top-2',
-                     'Не удалось получить данные'),
-            data.get('point-time', 'Не удалось получить данные'),
-        )
+        # Извлечение данных
+        temperature = weather_data['temperature']
+        description = weather_data['description']
+        date = weather_data['date']
 
         # Выполнение запроса на вставку данных
-        cursor.execute(insert_query, values)
+        cursor.execute(insert_query, (temperature, description, date))
 
         # Фиксация изменений
         conn.commit()
 
-        # Закрытие курсора и соединения
+        print("Данные успешно записаны в базу данных.")
+
+    except Exception as e:
+        print(f"Ошибка при вставке данных: {e}")
+        conn.rollback()
+
+    finally:
         cursor.close()
         conn.close()
 
-        print("Данные успешно записаны в базу данных")
-
-    except Exception as e:
-        print(f"Ошибка при записи данных в базу данных: {e}")
-
-
 if __name__ == "__main__":
     while True:
-        file_path = 'weather_data.json'
-        weather_data = read_weather_data(file_path)
-        insert_weather_data(weather_data)
-
-        # Ожидание 5 минут (300 секунд) перед следующим запуском
-        time.sleep(300)
+        transfer_to_db()
+        # Ожидание 5 минут (300 секунд) перед следующим запросом
+        time.sleep(650)
