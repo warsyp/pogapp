@@ -1,0 +1,24 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - echo "Building the project..."
+    - # Добавь команды для сборки (например, `pip install -r requirements.txt` для Python)
+
+test_job:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - # Добавь команды для тестирования (например, `pytest` или другие тесты)
+
+deploy_job:
+  stage: deploy
+  script:
+    - echo "Deploying the project..."
+    - # Укажи команды деплоя (например, деплой на сервер или в Docker Registry)
+  only:
+    - main  # запускать только для ветки main
